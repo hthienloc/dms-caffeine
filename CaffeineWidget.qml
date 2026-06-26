@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Shapes
 import Quickshell
 import qs.Common
 import qs.Widgets
@@ -43,6 +44,94 @@ PluginComponent {
 
     // Sync settings
     property bool showToasts: (pluginData.showToasts ?? true)
+
+    // Animated Coffee Cup component with steam and radial progress ring
+    Component {
+        id: animatedCoffeeCup
+        Item {
+            id: cupRoot
+            width: 56
+            height: 56
+            
+            // Radial progress ring
+            RadialProgressRing {
+                anchors.fill: parent
+                radius: 25
+                strokeWidth: 3
+                color: Theme.primary
+                active: root.caffeineActive
+                backgroundOpacityActive: 0.25
+                backgroundOpacityInactive: 0.08
+                angle: {
+                    if (root.selectedDuration === "infinity") return 360;
+                    const total = parseInt(root.selectedDuration);
+                    if (isNaN(total) || total <= 0) return 360;
+                    return 360 * (root.timeLeft / total);
+                }
+            }
+
+            // Coffee Cup Icon
+            DankIcon {
+                id: cupIcon
+                name: "local_cafe"
+                size: 28
+                color: root.caffeineActive ? Theme.primary : Theme.surfaceText
+                anchors.centerIn: parent
+                anchors.verticalCenterOffset: 2
+            }
+
+            // Steaming lines (active only)
+            Item {
+                id: steamContainer
+                width: 24
+                height: 16
+                anchors.bottom: cupIcon.top
+                anchors.horizontalCenter: cupIcon.horizontalCenter
+                anchors.bottomMargin: -2
+                visible: root.caffeineActive
+
+                Repeater {
+                    model: 3
+                    delegate: Shape {
+                        id: steam
+                        width: 6
+                        height: 12
+                        x: [3, 9, 15][index]
+                        y: 4
+                        opacity: 0
+                        
+                        ShapePath {
+                            strokeColor: Theme.primary
+                            strokeWidth: 1.5
+                            fillColor: "transparent"
+                            capStyle: ShapePath.RoundCap
+                            startX: 3
+                            startY: 12
+                            PathQuad { x: 1; y: 6; controlX: 5; controlY: 9 }
+                            PathQuad { x: 3; y: 0; controlX: -1; controlY: 3 }
+                        }
+
+                        SequentialAnimation {
+                            running: steamContainer.visible
+                            loops: Animation.Infinite
+                            
+                            PauseAnimation {
+                                duration: index * 400
+                            }
+                            
+                            ParallelAnimation {
+                                NumberAnimation { target: steam; property: "y"; from: 4; to: -8; duration: 1200; easing.type: Easing.OutQuad }
+                                SequentialAnimation {
+                                    NumberAnimation { target: steam; property: "opacity"; from: 0; to: 0.7; duration: 400 }
+                                    NumberAnimation { target: steam; property: "opacity"; from: 0.7; to: 0; duration: 800 }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     property var durationOptions: {
         const rawPresets = pluginData?.presets ?? "5, 15, 30, 60, 120, infinity";
@@ -97,9 +186,10 @@ PluginComponent {
     ccWidgetIsActive: caffeineActive
     ccDetailHeight: {
         const rows = Math.ceil(durationOptions.length / 3);
-        const headerHeight = Theme.fontSizeLarge + Theme.spacingXS + Theme.spacingM;
+        const headerHeight = 64 + Theme.spacingS;
         const gridHeight = rows * 48 + Math.max(0, rows - 1) * Theme.spacingS;
-        return headerHeight + gridHeight + Theme.spacingM * 2;
+        const customInputHeight = 36 + Theme.spacingS;
+        return headerHeight + gridHeight + customInputHeight + Theme.spacingM * 2;
     }
 
     readonly property color pillColor: caffeineActive ? Theme.primary : Theme.surfaceText
@@ -107,12 +197,33 @@ PluginComponent {
     horizontalBarPill: Component {
         Row {
             spacing: caffeineActive ? Theme.spacingS : 0
-            DankIcon {
-                name: "local_cafe"
-                size: Theme.iconSizeSmall
-                color: root.pillColor
+            
+            // Icon wrapped in small radial progress ring
+            RadialProgressRing {
+                width: 24
+                height: 24
                 anchors.verticalCenter: parent.verticalCenter
+                radius: 10
+                strokeWidth: 1.5
+                color: root.pillColor
+                active: root.caffeineActive
+                backgroundOpacityActive: 0.2
+                backgroundOpacityInactive: 0.05
+                angle: {
+                    if (root.selectedDuration === "infinity") return 360;
+                    const total = parseInt(root.selectedDuration);
+                    if (isNaN(total) || total <= 0) return 360;
+                    return 360 * (root.timeLeft / total);
+                }
+
+                DankIcon {
+                    name: "local_cafe"
+                    size: Theme.iconSizeSmall
+                    color: root.pillColor
+                    anchors.centerIn: parent
+                }
             }
+
             StyledText {
                 text: root.ccWidgetSecondaryText
                 color: root.pillColor
@@ -126,12 +237,33 @@ PluginComponent {
     verticalBarPill: Component {
         Column {
             spacing: caffeineActive ? Theme.spacingXS : 0
-            DankIcon {
-                name: "local_cafe"
-                size: Theme.iconSizeSmall
-                color: root.pillColor
+            
+            // Icon wrapped in small radial progress ring
+            RadialProgressRing {
+                width: 24
+                height: 24
                 anchors.horizontalCenter: parent.horizontalCenter
+                radius: 10
+                strokeWidth: 1.5
+                color: root.pillColor
+                active: root.caffeineActive
+                backgroundOpacityActive: 0.2
+                backgroundOpacityInactive: 0.05
+                angle: {
+                    if (root.selectedDuration === "infinity") return 360;
+                    const total = parseInt(root.selectedDuration);
+                    if (isNaN(total) || total <= 0) return 360;
+                    return 360 * (root.timeLeft / total);
+                }
+
+                DankIcon {
+                    name: "local_cafe"
+                    size: Theme.iconSizeSmall
+                    color: root.pillColor
+                    anchors.centerIn: parent
+                }
             }
+
             StyledText {
                 text: root.ccWidgetSecondaryText
                 color: root.pillColor
@@ -207,12 +339,39 @@ PluginComponent {
                 anchors.margins: Theme.spacingM
                 spacing: Theme.spacingS
 
-                StyledText {
-                    text: I18n.tr("Caffeine") + " — " + I18n.tr(caffeineActive ? "Active" : "Inactive")
-                    font.pixelSize: Theme.fontSizeLarge
-                    color: Theme.surfaceText
-                    font.weight: Font.Medium
+                Row {
+                    width: parent.width
+                    spacing: Theme.spacingM
                     bottomPadding: Theme.spacingXS
+
+                    Loader {
+                        sourceComponent: animatedCoffeeCup
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Column {
+                        width: parent.width - 56 - Theme.spacingM
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+
+                        StyledText {
+                            text: I18n.tr("Caffeine")
+                            font.pixelSize: Theme.fontSizeLarge
+                            color: Theme.surfaceText
+                            font.weight: Font.Medium
+                        }
+
+                        StyledText {
+                            text: {
+                                if (!root.caffeineActive) return I18n.tr("Inactive");
+                                if (root.selectedDuration === "infinity") return I18n.tr("Active (Indefinite)");
+                                const mins = Math.ceil(root.timeLeft / 60);
+                                return I18n.tr("Active: %1m remaining").arg(mins);
+                            }
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: root.caffeineActive ? Theme.primary : Theme.surfaceVariantText
+                        }
+                    }
                 }
 
                 Grid {
@@ -278,6 +437,44 @@ PluginComponent {
                         }
                     }
                 }
+
+                Row {
+                    width: parent.width
+                    spacing: Theme.spacingS
+                    topPadding: Theme.spacingXS
+
+                    DankTextField {
+                        id: customTimeInput
+                        width: parent.width - btnSet.width - Theme.spacingS
+                        height: 36
+                        placeholderText: I18n.tr("Custom minutes...")
+                        validator: IntValidator { bottom: 1; top: 1440 }
+                        backgroundColor: Theme.surfaceContainerHighest
+                        normalBorderColor: Theme.outline
+                        focusedBorderColor: Theme.primary
+                        
+                        Keys.onReturnPressed: {
+                            applyCustomTime();
+                        }
+                    }
+
+                    DankButton {
+                        id: btnSet
+                        text: I18n.tr("Set")
+                        height: 36
+                        onClicked: {
+                            applyCustomTime();
+                        }
+                    }
+
+                    function applyCustomTime() {
+                        const mins = parseInt(customTimeInput.text.trim());
+                        if (!isNaN(mins) && mins > 0) {
+                            root.changeDuration((mins * 60).toString());
+                            customTimeInput.text = "";
+                        }
+                    }
+                }
             }
         }
     }
@@ -310,6 +507,9 @@ PluginComponent {
                 if (expiration > Date.now()) {
                     globalTimeLeft.set(Math.round((expiration - Date.now()) / 1000));
                     countdownTimer.start();
+                }
+                if (typeof SessionService !== "undefined") {
+                    SessionService.enableIdleInhibit();
                 }
             } else {
                 globalIsActive.set(false);
@@ -378,6 +578,10 @@ PluginComponent {
             if (showToasts) {
                 ToastService?.showSuccess(I18n.tr("Duration updated: stay awake for ") + formatDurationLabel(newDuration) + ".")
             }
+
+            if (typeof SessionService !== "undefined") {
+                SessionService.enableIdleInhibit();
+            }
         }
     }
 
@@ -398,6 +602,9 @@ PluginComponent {
                     ToastService?.showInfo(I18n.tr("Screen sleep is now allowed."))
                 }
             })
+            if (typeof SessionService !== "undefined") {
+                SessionService.disableIdleInhibit();
+            }
         } else {
             // Activate
             const args = [
@@ -432,6 +639,10 @@ PluginComponent {
             if (showToasts) {
                 ToastService?.showSuccess(targetDuration === "infinity" ? I18n.tr("Screen will stay awake.") : I18n.tr("Screen will stay awake for ") + formatDurationLabel(targetDuration) + ".")
             }
+
+            if (typeof SessionService !== "undefined") {
+                SessionService.enableIdleInhibit();
+            }
         }
     }
 
@@ -450,12 +661,39 @@ PluginComponent {
                 anchors.margins: Theme.spacingM
                 spacing: Theme.spacingS
 
-                StyledText {
-                    text: I18n.tr("Keep Awake Duration")
-                    font.pixelSize: Theme.fontSizeLarge
-                    color: Theme.surfaceText
-                    font.weight: Font.Medium
+                Row {
+                    width: parent.width
+                    spacing: Theme.spacingM
                     bottomPadding: Theme.spacingXS
+
+                    Loader {
+                        sourceComponent: animatedCoffeeCup
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Column {
+                        width: parent.width - 56 - Theme.spacingM
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+
+                        StyledText {
+                            text: I18n.tr("Keep Awake Duration")
+                            font.pixelSize: Theme.fontSizeLarge
+                            color: Theme.surfaceText
+                            font.weight: Font.Medium
+                        }
+
+                        StyledText {
+                            text: {
+                                if (!root.caffeineActive) return I18n.tr("Inactive");
+                                if (root.selectedDuration === "infinity") return I18n.tr("Active (Indefinite)");
+                                const mins = Math.ceil(root.timeLeft / 60);
+                                return I18n.tr("Active: %1m remaining").arg(mins);
+                            }
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: root.caffeineActive ? Theme.primary : Theme.surfaceVariantText
+                        }
+                    }
                 }
 
                 Grid {
@@ -501,6 +739,44 @@ PluginComponent {
                                 font.weight: root.selectedDuration === modelData.value ? Font.Medium : Font.Normal
                                 anchors.centerIn: parent
                             }
+                        }
+                    }
+                }
+
+                Row {
+                    width: parent.width
+                    spacing: Theme.spacingS
+                    topPadding: Theme.spacingXS
+
+                    DankTextField {
+                        id: customTimeInputCC
+                        width: parent.width - btnSetCC.width - Theme.spacingS
+                        height: 36
+                        placeholderText: I18n.tr("Custom minutes...")
+                        validator: IntValidator { bottom: 1; top: 1440 }
+                        backgroundColor: Theme.surfaceContainerHighest
+                        normalBorderColor: Theme.outline
+                        focusedBorderColor: Theme.primary
+                        
+                        Keys.onReturnPressed: {
+                            applyCustomTimeCC();
+                        }
+                    }
+
+                    DankButton {
+                        id: btnSetCC
+                        text: I18n.tr("Set")
+                        height: 36
+                        onClicked: {
+                            applyCustomTimeCC();
+                        }
+                    }
+
+                    function applyCustomTimeCC() {
+                        const mins = parseInt(customTimeInputCC.text.trim());
+                        if (!isNaN(mins) && mins > 0) {
+                            root.changeDuration((mins * 60).toString());
+                            customTimeInputCC.text = "";
                         }
                     }
                 }

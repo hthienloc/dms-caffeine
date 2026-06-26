@@ -33,6 +33,8 @@ git clone https://github.com/hthienloc/dms-caffeine ~/.config/DankMaterialShell/
 - [ ] **App Automation:** Auto-activate for specific apps (Media players, Meeting tools).
 - [ ] **Full Screen Awareness:** Stay awake automatically when any window is full-screen.
 - [ ] **Battery Integration:** Automatically disable when battery levels are low.
+- [ ] **Deactivate on Manual Lock:** Automatically disable stay-awake if the screen is locked manually.
+- [ ] **Custom Presets Manager:** Save typed custom durations into persistent presets.
 
 ## License
 

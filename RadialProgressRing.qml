@@ -1,0 +1,56 @@
+import QtQuick
+import QtQuick.Shapes
+import qs.Common
+
+Item {
+    id: radialRingRoot
+
+    property bool active: false
+    property double angle: 360
+    property color color: Theme.primary
+    property real strokeWidth: 2
+    property real radius: 10
+    property real centerX: width / 2
+    property real centerY: height / 2
+    property real backgroundOpacityActive: 0.2
+    property real backgroundOpacityInactive: 0.05
+
+    Shape {
+        anchors.fill: parent
+        antialiasing: true
+        opacity: active ? backgroundOpacityActive : backgroundOpacityInactive
+        ShapePath {
+            strokeColor: color
+            strokeWidth: strokeWidth
+            fillColor: "transparent"
+            PathAngleArc {
+                centerX: radialRingRoot.centerX
+                centerY: radialRingRoot.centerY
+                radiusX: radius
+                radiusY: radius
+                startAngle: 0
+                sweepAngle: 360
+            }
+        }
+    }
+
+    Shape {
+        anchors.fill: parent
+        antialiasing: true
+        visible: active && angle > 0
+        ShapePath {
+            strokeColor: color
+            strokeWidth: strokeWidth + 0.5
+            fillColor: "transparent"
+            capStyle: ShapePath.RoundCap
+            PathAngleArc {
+                centerX: radialRingRoot.centerX
+                centerY: radialRingRoot.centerY
+                radiusX: radius
+                radiusY: radius
+                startAngle: -90
+                sweepAngle: Math.max(0, Math.min(360, angle))
+            }
+        }
+    }
+}
