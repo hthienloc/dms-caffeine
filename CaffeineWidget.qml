@@ -475,9 +475,6 @@ PluginComponent {
                         height: 36
                         placeholderText: I18n.tr("Custom minutes...")
                         validator: IntValidator { bottom: 1; top: 1440 }
-                        backgroundColor: Theme.surfaceContainerHighest
-                        normalBorderColor: Theme.outline
-                        focusedBorderColor: Theme.primary
                         
                         Keys.onReturnPressed: {
                             applyCustomTime();
@@ -1013,9 +1010,6 @@ PluginComponent {
                         height: 36
                         placeholderText: I18n.tr("Custom minutes...")
                         validator: IntValidator { bottom: 1; top: 1440 }
-                        backgroundColor: Theme.surfaceContainerHighest
-                        normalBorderColor: Theme.outline
-                        focusedBorderColor: Theme.primary
                         
                         Keys.onReturnPressed: {
                             applyCustomTimeCC();
