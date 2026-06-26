@@ -515,7 +515,7 @@ PluginComponent {
             globalTimeLeft.set(globalTimeLeft.value - 1);
             if (globalTimeLeft.value <= 0) {
                 countdownTimer.stop();
-                toggleCaffeine(); // Turn off caffeine
+                deactivateCaffeine("timeout"); // Turn off caffeine
             }
         }
     }
@@ -614,6 +614,48 @@ PluginComponent {
         }
     }
 
+    function deactivateCaffeine(reason) {
+        if (!globalIsActive.value) return;
+
+        // Reset activation flags
+        globalIsActive.set(false);
+        globalIsAutoActive.set(false);
+
+        // Determine if we need to set manual override off flag
+        if (reason === "manual-toggle" && globalIsAutoActive.value) {
+            globalManualOverrideOff.set(true);
+        } else if (reason !== "preserve-override") {
+            globalManualOverrideOff.set(false);
+        }
+
+        // Stop any running countdown
+        countdownTimer.stop();
+
+        // Clear stored expiration state
+        if (pluginService) {
+            pluginService.savePluginState(pluginId, "expiration", 0);
+        }
+
+        // Kill the inhibitor process
+        Proc.runCommand("deactivate-caffeine", ["pkill", "-f", "DMS Caffeine"], function(output, exitCode) {
+            if (showToasts) {
+                if (reason === "battery") {
+                    ToastService?.showWarning(
+                        I18n.tr("Low Battery"),
+                        I18n.tr("Stay awake disabled to save power.")
+                    );
+                } else if (reason !== "lock" && reason !== "silent" && reason !== "timeout") {
+                    ToastService?.showInfo(I18n.tr("Screen sleep is now allowed."));
+                }
+            }
+        });
+
+        // Allow the session to sleep again
+        if (typeof SessionService !== "undefined") {
+            SessionService.disableIdleInhibit();
+        }
+    }
+
     function toggleCaffeine(duration) {
         if (batteryIntegrationEnabled && typeof BatteryService !== "undefined" && BatteryService.batteryAvailable && !BatteryService.isCharging && BatteryService.batteryLevel <= batteryLowThreshold) {
             if (!globalIsActive.value) {
@@ -630,24 +672,7 @@ PluginComponent {
             targetDuration = "infinity";
         }
         if (globalIsActive.value) {
-            // Deactivate
-            if (globalIsAutoActive.value) {
-                globalIsAutoActive.set(false);
-                globalManualOverrideOff.set(true);
-            }
-            globalIsActive.set(false); // Set synchronously to avoid race conditions
-            countdownTimer.stop();
-            if (pluginService) {
-                pluginService.savePluginState(pluginId, "expiration", 0);
-            }
-            Proc.runCommand("deactivate-caffeine", ["pkill", "-f", "DMS Caffeine"], function(output, exitCode) {
-                if (showToasts) {
-                    ToastService?.showInfo(I18n.tr("Screen sleep is now allowed."))
-                }
-            })
-            if (typeof SessionService !== "undefined") {
-                SessionService.disableIdleInhibit();
-            }
+            deactivateCaffeine("manual-toggle");
         } else {
             // Activate
             const args = [
@@ -736,22 +761,7 @@ PluginComponent {
     }
 
     function deactivateCaffeineAuto() {
-        if (!globalIsActive.value) return;
-        
-        globalIsActive.set(false);
-        globalIsAutoActive.set(false);
-        countdownTimer.stop();
-        if (pluginService) {
-            pluginService.savePluginState(pluginId, "expiration", 0);
-        }
-        Proc.runCommand("deactivate-caffeine", ["pkill", "-f", "DMS Caffeine"], function(output, exitCode) {
-            if (showToasts) {
-                ToastService?.showInfo(I18n.tr("Screen sleep is now allowed."))
-            }
-        })
-        if (typeof SessionService !== "undefined") {
-            SessionService.disableIdleInhibit();
-        }
+        deactivateCaffeine("auto");
     }
 
     function checkAutoActivation() {
@@ -808,24 +818,7 @@ PluginComponent {
         if (typeof BatteryService === "undefined" || !BatteryService.batteryAvailable) return;
         
         if (!BatteryService.isCharging && BatteryService.batteryLevel <= batteryLowThreshold) {
-            if (globalIsActive.value) {
-                globalIsAutoActive.set(false);
-                globalManualOverrideOff.set(false);
-                globalIsActive.set(false);
-                countdownTimer.stop();
-                if (pluginService) {
-                    pluginService.savePluginState(pluginId, "expiration", 0);
-                }
-                Proc.runCommand("deactivate-caffeine-battery", ["pkill", "-f", "DMS Caffeine"], function(output, exitCode) {
-                    ToastService?.showWarning(
-                        I18n.tr("Low Battery"),
-                        I18n.tr("Stay awake disabled to save power.")
-                    )
-                })
-                if (typeof SessionService !== "undefined") {
-                    SessionService.disableIdleInhibit();
-                }
-            }
+            deactivateCaffeine("battery");
         }
     }
 
@@ -878,15 +871,7 @@ PluginComponent {
         ignoreUnknownSignals: true
         function onLockedChanged() {
             if (SessionService.locked && deactivateOnManualLock && globalIsActive.value) {
-                globalIsAutoActive.set(false);
-                globalManualOverrideOff.set(false);
-                globalIsActive.set(false);
-                countdownTimer.stop();
-                if (pluginService) {
-                    pluginService.savePluginState(pluginId, "expiration", 0);
-                }
-                Proc.runCommand("deactivate-caffeine-lock", ["pkill", "-f", "DMS Caffeine"], null, 0);
-                SessionService.disableIdleInhibit();
+                deactivateCaffeine("lock");
             }
         }
     }
