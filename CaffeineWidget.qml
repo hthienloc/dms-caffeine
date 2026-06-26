@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
 import Quickshell
+import Quickshell.Wayland
 import qs.Common
 import qs.Widgets
 import qs.Services
@@ -30,6 +31,9 @@ PluginComponent {
     }
     readonly property int timeLeft: globalTimeLeft.value
 
+    readonly property bool isAutoActive: globalIsAutoActive.value
+    readonly property bool manualOverrideOff: globalManualOverrideOff.value
+
     PluginGlobalVar {
         id: globalIsActive
         varName: "isActive"
@@ -42,8 +46,30 @@ PluginComponent {
         defaultValue: 0
     }
 
+    PluginGlobalVar {
+        id: globalIsAutoActive
+        varName: "isAutoActive"
+        defaultValue: false
+    }
+
+    PluginGlobalVar {
+        id: globalManualOverrideOff
+        varName: "manualOverrideOff"
+        defaultValue: false
+    }
+
     // Sync settings
     property bool showToasts: (pluginData.showToasts ?? true)
+    property bool appAutomationEnabled: (pluginData.appAutomationEnabled ?? false)
+    property string autoAppsList: (pluginData.autoAppsList ?? "mpv, vlc, zoom, Teams, discord, webcord, slack, spotify, obs")
+    property bool fullscreenAwarenessEnabled: (pluginData.fullscreenAwarenessEnabled ?? false)
+    property bool batteryIntegrationEnabled: (pluginData.batteryIntegrationEnabled ?? false)
+    property int batteryLowThreshold: {
+        const raw = pluginData.batteryLowThreshold ?? "15";
+        const val = parseInt(raw);
+        return isNaN(val) ? 15 : val;
+    }
+    property bool deactivateOnManualLock: (pluginData.deactivateOnManualLock ?? true)
 
     // Animated Coffee Cup component with steam and radial progress ring
     Component {
@@ -517,6 +543,9 @@ PluginComponent {
                     pluginService.savePluginState(pluginId, "expiration", 0);
                 }
             }
+            // Trigger auto-checks after we sync caffeine state!
+            checkAutoActivation();
+            checkBatteryStatus();
         })
     }
 
@@ -541,6 +570,9 @@ PluginComponent {
         }
 
         if (caffeineActive) {
+            if (globalIsAutoActive.value) {
+                globalIsAutoActive.set(false);
+            }
             // Keep active, but update the duration!
             // 1. Kill the old process
             Proc.runCommand("deactivate-caffeine", ["pkill", "-f", "DMS Caffeine"], null, 0);
@@ -586,12 +618,26 @@ PluginComponent {
     }
 
     function toggleCaffeine(duration) {
+        if (batteryIntegrationEnabled && typeof BatteryService !== "undefined" && BatteryService.batteryAvailable && !BatteryService.isCharging && BatteryService.batteryLevel <= batteryLowThreshold) {
+            if (!globalIsActive.value) {
+                ToastService?.showWarning(
+                    I18n.tr("Low Battery"),
+                    I18n.tr("Cannot enable stay-awake when battery is low.")
+                );
+                return;
+            }
+        }
+
         let targetDuration = duration !== undefined ? duration : selectedDuration;
         if (targetDuration === undefined || targetDuration === null || targetDuration === "undefined" || targetDuration === "") {
             targetDuration = "infinity";
         }
         if (globalIsActive.value) {
             // Deactivate
+            if (globalIsAutoActive.value) {
+                globalIsAutoActive.set(false);
+                globalManualOverrideOff.set(true);
+            }
             globalIsActive.set(false); // Set synchronously to avoid race conditions
             countdownTimer.stop();
             if (pluginService) {
@@ -643,6 +689,219 @@ PluginComponent {
             if (typeof SessionService !== "undefined") {
                 SessionService.enableIdleInhibit();
             }
+        }
+    }
+
+    function activateCaffeineAuto(targetDuration) {
+        if (batteryIntegrationEnabled && typeof BatteryService !== "undefined" && BatteryService.batteryAvailable && !BatteryService.isCharging && BatteryService.batteryLevel <= batteryLowThreshold) {
+            return;
+        }
+
+        if (globalIsActive.value) return;
+
+        const args = [
+            "systemd-inhibit", 
+            "--what=idle", 
+            "--who=DMS Caffeine Auto", 
+            "--why=Automated stay awake override"
+        ];
+        if (targetDuration === "infinity") {
+            args.push("sleep", "infinity");
+        } else {
+            args.push("sleep", targetDuration);
+        }
+        Quickshell.execDetached(args);
+        
+        if (targetDuration !== "infinity") {
+            const durationSecs = parseInt(targetDuration);
+            globalTimeLeft.set(durationSecs);
+            const expiration = Date.now() + durationSecs * 1000;
+            if (pluginService) {
+                pluginService.savePluginState(pluginId, "expiration", expiration);
+            }
+            countdownTimer.restart();
+        } else {
+            if (pluginService) {
+                pluginService.savePluginState(pluginId, "expiration", 0);
+            }
+        }
+
+        globalIsActive.set(true);
+        globalIsAutoActive.set(true);
+        
+        if (showToasts) {
+            ToastService?.showSuccess(I18n.tr("Screen will stay awake automatically."))
+        }
+
+        if (typeof SessionService !== "undefined") {
+            SessionService.enableIdleInhibit();
+        }
+    }
+
+    function deactivateCaffeineAuto() {
+        if (!globalIsActive.value) return;
+        
+        globalIsActive.set(false);
+        globalIsAutoActive.set(false);
+        countdownTimer.stop();
+        if (pluginService) {
+            pluginService.savePluginState(pluginId, "expiration", 0);
+        }
+        Proc.runCommand("deactivate-caffeine", ["pkill", "-f", "DMS Caffeine"], function(output, exitCode) {
+            if (showToasts) {
+                ToastService?.showInfo(I18n.tr("Screen sleep is now allowed."))
+            }
+        })
+        if (typeof SessionService !== "undefined") {
+            SessionService.disableIdleInhibit();
+        }
+    }
+
+    function checkAutoActivation() {
+        let shouldActivate = false;
+
+        // 1. App Automation
+        if (appAutomationEnabled) {
+            const apps = autoAppsList.split(",").map(a => a.trim().toLowerCase()).filter(Boolean);
+            if (apps.length > 0 && typeof ToplevelManager !== "undefined" && ToplevelManager.toplevels?.values) {
+                for (const toplevel of ToplevelManager.toplevels.values) {
+                    const appId = (toplevel.appId || "").toLowerCase();
+                    const title = (toplevel.title || "").toLowerCase();
+                    
+                    const matches = apps.some(app => {
+                        return appId.includes(app) || title.includes(app);
+                    });
+                    
+                    if (matches) {
+                        shouldActivate = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 2. Full Screen Awareness
+        if (!shouldActivate && fullscreenAwarenessEnabled) {
+            if (typeof ToplevelManager !== "undefined" && ToplevelManager.toplevels?.values) {
+                for (const toplevel of ToplevelManager.toplevels.values) {
+                    if (toplevel.fullscreen && toplevel.activated) {
+                        shouldActivate = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (shouldActivate) {
+            if (!globalIsActive.value) {
+                if (!globalManualOverrideOff.value) {
+                    activateCaffeineAuto("infinity");
+                }
+            }
+        } else {
+            globalManualOverrideOff.set(false);
+            if (globalIsAutoActive.value) {
+                deactivateCaffeineAuto();
+            }
+        }
+    }
+
+    function checkBatteryStatus() {
+        if (!batteryIntegrationEnabled) return;
+        if (typeof BatteryService === "undefined" || !BatteryService.batteryAvailable) return;
+        
+        if (!BatteryService.isCharging && BatteryService.batteryLevel <= batteryLowThreshold) {
+            if (globalIsActive.value) {
+                globalIsAutoActive.set(false);
+                globalManualOverrideOff.set(false);
+                globalIsActive.set(false);
+                countdownTimer.stop();
+                if (pluginService) {
+                    pluginService.savePluginState(pluginId, "expiration", 0);
+                }
+                Proc.runCommand("deactivate-caffeine-battery", ["pkill", "-f", "DMS Caffeine"], function(output, exitCode) {
+                    ToastService?.showWarning(
+                        I18n.tr("Low Battery"),
+                        I18n.tr("Stay awake disabled to save power.")
+                    )
+                })
+                if (typeof SessionService !== "undefined") {
+                    SessionService.disableIdleInhibit();
+                }
+            }
+        }
+    }
+
+    onAppAutomationEnabledChanged: checkAutoActivation()
+    onAutoAppsListChanged: checkAutoActivation()
+    onFullscreenAwarenessEnabledChanged: checkAutoActivation()
+    onBatteryIntegrationEnabledChanged: {
+        checkBatteryStatus();
+        checkAutoActivation();
+    }
+    onBatteryLowThresholdChanged: checkBatteryStatus()
+
+    Connections {
+        target: (typeof ToplevelManager !== "undefined") ? ToplevelManager : null
+        ignoreUnknownSignals: true
+        function onActiveToplevelChanged() {
+            checkAutoActivation();
+        }
+    }
+
+    Connections {
+        target: (typeof ToplevelManager !== "undefined" && ToplevelManager.toplevels) ? ToplevelManager.toplevels : null
+        ignoreUnknownSignals: true
+        function onValuesChanged() {
+            checkAutoActivation();
+        }
+    }
+
+    Connections {
+        target: (typeof CompositorService !== "undefined") ? CompositorService : null
+        ignoreUnknownSignals: true
+        function onToplevelsChanged() {
+            checkAutoActivation();
+        }
+    }
+
+    Connections {
+        target: (typeof BatteryService !== "undefined") ? BatteryService : null
+        ignoreUnknownSignals: true
+        function onBatteryLevelChanged() {
+            checkBatteryStatus();
+        }
+        function onIsChargingChanged() {
+            checkBatteryStatus();
+        }
+    }
+
+    Connections {
+        target: (typeof SessionService !== "undefined") ? SessionService : null
+        ignoreUnknownSignals: true
+        function onLockedChanged() {
+            if (SessionService.locked && deactivateOnManualLock && globalIsActive.value) {
+                globalIsAutoActive.set(false);
+                globalManualOverrideOff.set(false);
+                globalIsActive.set(false);
+                countdownTimer.stop();
+                if (pluginService) {
+                    pluginService.savePluginState(pluginId, "expiration", 0);
+                }
+                Proc.runCommand("deactivate-caffeine-lock", ["pkill", "-f", "DMS Caffeine"], null, 0);
+                SessionService.disableIdleInhibit();
+            }
+        }
+    }
+
+    Timer {
+        id: autoCheckTimer
+        interval: 2000
+        repeat: true
+        running: appAutomationEnabled || fullscreenAwarenessEnabled || batteryIntegrationEnabled
+        onTriggered: {
+            checkAutoActivation();
+            checkBatteryStatus();
         }
     }
 

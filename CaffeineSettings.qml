@@ -62,6 +62,98 @@ PluginSettings {
     }
 
     SettingsCard {
+        id: automationSection
+        SectionTitle { 
+            text: I18n.tr("Automation")
+            icon: "settings_suggest" 
+            showReset: appAutomation.isDirty || autoApps.isDirty || fullscreenAwareness.isDirty
+            onResetClicked: {
+                appAutomation.resetToDefault();
+                autoApps.resetToDefault();
+                fullscreenAwareness.resetToDefault();
+            }
+        }
+
+        ToggleSettingPlus {
+            id: appAutomation
+            settingKey: "appAutomationEnabled"
+            label: I18n.tr("App Automation")
+            description: I18n.tr("Automatically keep screen awake when specific apps (e.g. Media players, Meeting tools) are open.")
+            defaultValue: false
+        }
+
+        Separator {
+            visible: appAutomation.value
+        }
+
+        StringSettingPlus {
+            id: autoApps
+            settingKey: "autoAppsList"
+            label: I18n.tr("Auto-Activate Apps")
+            description: I18n.tr("Comma-separated list of app names/IDs (case-insensitive substring match).")
+            placeholder: "mpv, vlc, zoom, Teams, discord, webcord, slack, spotify, obs"
+            defaultValue: "mpv, vlc, zoom, Teams, discord, webcord, slack, spotify, obs"
+            visible: appAutomation.value
+        }
+
+        Separator {}
+
+        ToggleSettingPlus {
+            id: fullscreenAwareness
+            settingKey: "fullscreenAwarenessEnabled"
+            label: I18n.tr("Full Screen Awareness")
+            description: I18n.tr("Automatically keep screen awake when any window is full-screen.")
+            defaultValue: false
+        }
+    }
+
+    SettingsCard {
+        id: systemIntegrationSection
+        SectionTitle { 
+            text: I18n.tr("System Integration")
+            icon: "power" 
+            showReset: batteryIntegration.isDirty || batteryThreshold.isDirty || deactivateOnLock.isDirty
+            onResetClicked: {
+                batteryIntegration.resetToDefault();
+                batteryThreshold.resetToDefault();
+                deactivateOnLock.resetToDefault();
+            }
+        }
+
+        ToggleSettingPlus {
+            id: batteryIntegration
+            settingKey: "batteryIntegrationEnabled"
+            label: I18n.tr("Battery Integration")
+            description: I18n.tr("Automatically disable stay-awake when battery is low and not charging.")
+            defaultValue: false
+        }
+
+        Separator {
+            visible: batteryIntegration.value
+        }
+
+        StringSettingPlus {
+            id: batteryThreshold
+            settingKey: "batteryLowThreshold"
+            label: I18n.tr("Battery Low Threshold (%)")
+            description: I18n.tr("Automatically disable stay-awake when battery drops to or below this percentage.")
+            placeholder: "15"
+            defaultValue: "15"
+            visible: batteryIntegration.value
+        }
+
+        Separator {}
+
+        ToggleSettingPlus {
+            id: deactivateOnLock
+            settingKey: "deactivateOnManualLock"
+            label: I18n.tr("Deactivate on Manual Lock")
+            description: I18n.tr("Automatically disable stay-awake when the screen is locked manually.")
+            defaultValue: true
+        }
+    }
+
+    SettingsCard {
         SectionTitle { 
             id: usageTitle
             text: I18n.tr("Usage Guide")
