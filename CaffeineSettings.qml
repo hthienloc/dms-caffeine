@@ -132,14 +132,22 @@ PluginSettings {
             visible: batteryIntegration.value
         }
 
-        StringSettingPlus {
+        SliderSetting {
             id: batteryThreshold
             settingKey: "batteryLowThreshold"
-            label: I18n.tr("Battery Low Threshold (%)")
+            label: I18n.tr("Battery Low Threshold")
             description: I18n.tr("Automatically disable stay-awake when battery drops to or below this percentage.")
-            placeholder: "15"
-            defaultValue: "15"
+            defaultValue: 15
+            minimum: 5
+            maximum: 50
+            unit: "%"
+            leftIcon: "battery_charging_full"
             visible: batteryIntegration.value
+
+            readonly property bool isDirty: value !== defaultValue
+            function resetToDefault() {
+                value = defaultValue;
+            }
         }
 
         Separator {}
