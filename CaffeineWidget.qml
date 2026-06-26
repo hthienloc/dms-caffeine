@@ -59,17 +59,18 @@ PluginComponent {
     }
 
     // Sync settings
-    property bool showToasts: (pluginData.showToasts ?? true)
-    property bool appAutomationEnabled: (pluginData.appAutomationEnabled ?? false)
-    property string autoAppsList: (pluginData.autoAppsList ?? "mpv, vlc, zoom, Teams, discord, webcord, slack, spotify, obs")
-    property bool fullscreenAwarenessEnabled: (pluginData.fullscreenAwarenessEnabled ?? false)
-    property bool batteryIntegrationEnabled: (pluginData.batteryIntegrationEnabled ?? false)
+    property bool showToasts: (pluginData?.showToasts ?? true)
+    property bool appAutomationEnabled: (pluginData?.appAutomationEnabled ?? false)
+    property string autoAppsList: (pluginData?.autoAppsList ?? "mpv, vlc, zoom, Teams, discord, webcord, slack, spotify, obs")
+    readonly property var parsedAutoApps: autoAppsList.split(",").map(a => a.trim().toLowerCase()).filter(Boolean)
+    property bool fullscreenAwarenessEnabled: (pluginData?.fullscreenAwarenessEnabled ?? false)
+    property bool batteryIntegrationEnabled: (pluginData?.batteryIntegrationEnabled ?? false)
     property int batteryLowThreshold: {
-        const raw = pluginData.batteryLowThreshold ?? "15";
+        const raw = pluginData?.batteryLowThreshold ?? "15";
         const val = parseInt(raw);
         return isNaN(val) ? 15 : val;
     }
-    property bool deactivateOnManualLock: (pluginData.deactivateOnManualLock ?? true)
+    property bool deactivateOnManualLock: (pluginData?.deactivateOnManualLock ?? true)
 
     // Animated Coffee Cup component with steam and radial progress ring
     Component {
@@ -769,7 +770,7 @@ PluginComponent {
 
         // 1. App Automation
         if (appAutomationEnabled) {
-            const apps = autoAppsList.split(",").map(a => a.trim().toLowerCase()).filter(Boolean);
+            const apps = parsedAutoApps;
             if (apps.length > 0 && typeof ToplevelManager !== "undefined" && ToplevelManager.toplevels?.values) {
                 for (const toplevel of ToplevelManager.toplevels.values) {
                     const appId = (toplevel.appId || "").toLowerCase();
