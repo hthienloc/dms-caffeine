@@ -644,7 +644,7 @@ PluginComponent {
                         I18n.tr("Low Battery"),
                         I18n.tr("Stay awake disabled to save power.")
                     );
-                } else if (reason !== "lock" && reason !== "silent" && reason !== "timeout") {
+                } else if (reason !== "lock" && reason !== "silent") {
                     ToastService?.showInfo(I18n.tr("Screen sleep is now allowed."));
                 }
             }
