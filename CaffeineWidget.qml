@@ -507,20 +507,6 @@ PluginComponent {
         toggleCaffeine()
     }
 
-    Timer {
-        id: countdownTimer
-        interval: 1000
-        repeat: true
-        running: false
-        onTriggered: {
-            globalTimeLeft.set(globalTimeLeft.value - 1);
-            if (globalTimeLeft.value <= 0) {
-                countdownTimer.stop();
-                deactivateCaffeine("timeout"); // Turn off caffeine
-            }
-        }
-    }
-
     // Sync with system state on startup
     Component.onCompleted: {
         Proc.runCommand("check-caffeine-active", ["pgrep", "-f", "DMS Caffeine"], function(output, exitCode) {
@@ -530,7 +516,6 @@ PluginComponent {
                 const expiration = pluginService ? pluginService.loadPluginState(pluginId, "expiration", 0) : 0;
                 if (expiration > Date.now()) {
                     globalTimeLeft.set(Math.round((expiration - Date.now()) / 1000));
-                    countdownTimer.start();
                 }
                 if (typeof SessionService !== "undefined") {
                     SessionService.enableIdleInhibit();
@@ -590,7 +575,6 @@ PluginComponent {
             Quickshell.execDetached(args);
 
             // 3. Update timer
-            countdownTimer.stop();
             if (newDuration !== "infinity") {
                 const durationSecs = parseInt(newDuration);
                 globalTimeLeft.set(durationSecs);
@@ -598,7 +582,6 @@ PluginComponent {
                 if (pluginService) {
                     pluginService.savePluginState(pluginId, "expiration", expiration);
                 }
-                countdownTimer.restart();
             } else {
                 if (pluginService) {
                     pluginService.savePluginState(pluginId, "expiration", 0);
@@ -628,9 +611,6 @@ PluginComponent {
         } else if (reason !== "preserve-override") {
             globalManualOverrideOff.set(false);
         }
-
-        // Stop any running countdown
-        countdownTimer.stop();
 
         // Clear stored expiration state
         if (pluginService) {
@@ -696,7 +676,6 @@ PluginComponent {
                 if (pluginService) {
                     pluginService.savePluginState(pluginId, "expiration", expiration);
                 }
-                countdownTimer.restart();
             } else {
                 if (pluginService) {
                     pluginService.savePluginState(pluginId, "expiration", 0);
@@ -742,7 +721,6 @@ PluginComponent {
             if (pluginService) {
                 pluginService.savePluginState(pluginId, "expiration", expiration);
             }
-            countdownTimer.restart();
         } else {
             if (pluginService) {
                 pluginService.savePluginState(pluginId, "expiration", 0);
