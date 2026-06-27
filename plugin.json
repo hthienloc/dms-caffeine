@@ -4,17 +4,12 @@
   "description": "Keep your screen awake and prevent idle sleep with a single click.",
   "version": "2.1.0",
   "author": "Loc Huynh",
-  "type": "composite",
+  "type": "widget",
   "icon": "local_cafe",
   "capabilities": [
-    "daemon",
-    "control-center",
-    "dankbar-widget"
+    "control-center"
   ],
-  "components": {
-    "daemon": "./CaffeineDaemon.qml",
-    "widget": "./CaffeineWidget.qml"
-  },
+  "component": "./CaffeineWidget.qml",
   "settings": "./CaffeineSettings.qml",
   "permissions": [
     "settings_read",
