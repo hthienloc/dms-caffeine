@@ -477,9 +477,7 @@ PluginComponent {
                         placeholderText: I18n.tr("Custom minutes...")
                         validator: IntValidator { bottom: 1; top: 1440 }
                         
-                        Keys.onReturnPressed: {
-                            applyCustomTime();
-                        }
+                        onAccepted: btnSet.clicked()
                     }
 
                     DankButton {
@@ -487,15 +485,16 @@ PluginComponent {
                         text: I18n.tr("Set")
                         height: 36
                         onClicked: {
-                            applyCustomTime();
-                        }
-                    }
-
-                    function applyCustomTime() {
-                        const mins = parseInt(customTimeInput.text.trim());
-                        if (!isNaN(mins) && mins > 0) {
-                            root.changeDuration((mins * 60).toString());
-                            customTimeInput.text = "";
+                            const mins = parseInt(customTimeInput.text.trim());
+                            if (!isNaN(mins) && mins > 0) {
+                                const value = (mins * 60).toString();
+                                root.changeDuration(value);
+                                if (!root.caffeineActive) {
+                                    root.toggleCaffeine(value);
+                                }
+                                customTimeInput.text = "";
+                                closePopout();
+                            }
                         }
                     }
                 }
@@ -997,9 +996,7 @@ PluginComponent {
                         placeholderText: I18n.tr("Custom minutes...")
                         validator: IntValidator { bottom: 1; top: 1440 }
                         
-                        Keys.onReturnPressed: {
-                            applyCustomTimeCC();
-                        }
+                        onAccepted: btnSetCC.clicked()
                     }
 
                     DankButton {
@@ -1007,15 +1004,15 @@ PluginComponent {
                         text: I18n.tr("Set")
                         height: 36
                         onClicked: {
-                            applyCustomTimeCC();
-                        }
-                    }
-
-                    function applyCustomTimeCC() {
-                        const mins = parseInt(customTimeInputCC.text.trim());
-                        if (!isNaN(mins) && mins > 0) {
-                            root.changeDuration((mins * 60).toString());
-                            customTimeInputCC.text = "";
+                            const mins = parseInt(customTimeInputCC.text.trim());
+                            if (!isNaN(mins) && mins > 0) {
+                                const value = (mins * 60).toString();
+                                root.changeDuration(value);
+                                if (!root.caffeineActive) {
+                                    root.toggleCaffeine(value);
+                                }
+                                customTimeInputCC.text = "";
+                            }
                         }
                     }
                 }
