@@ -315,9 +315,10 @@ PluginComponent {
 
     // Popout content: duration selector grid
     popoutContent: Component {
-        FocusScope {
+        PopoutComponent {
             id: popoutScope
-            implicitHeight: contentColumn.implicitHeight + Theme.spacingM * 2
+            headerText: I18n.tr("Caffeine")
+            showCloseButton: true
             property int currentIndex: 0
 
             // Keyboard navigation
@@ -351,25 +352,15 @@ PluginComponent {
                 }
             }
 
-            Rectangle {
-                id: popoutBg
-                anchors.fill: parent
-                radius: Theme.cornerRadius
-                color: Theme.surfaceContainerHigh
-                border.width: 0
-            }
-
             Column {
-                id: contentColumn
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.margins: Theme.spacingM
-                spacing: Theme.spacingS
+                width: parent.width
+                spacing: Theme.spacingM
+                leftPadding: Theme.spacingM
+                rightPadding: Theme.spacingM
 
                 Row {
                     width: parent.width
                     spacing: Theme.spacingM
-                    bottomPadding: Theme.spacingXS
 
                     Loader {
                         sourceComponent: animatedCoffeeCup
@@ -382,7 +373,7 @@ PluginComponent {
                         spacing: 2
 
                         StyledText {
-                            text: I18n.tr("Caffeine")
+                            text: I18n.tr("Keep Awake")
                             font.pixelSize: Theme.fontSizeLarge
                             color: Theme.surfaceText
                             font.weight: Font.Medium
@@ -450,7 +441,6 @@ PluginComponent {
                                 anchors.centerIn: parent
                             }
 
-                            // Activate on keyboard Enter/Space when focused
                             Keys.onReturnPressed: function(event) {
                                 popoutScope.currentIndex = index
                                 root.changeDuration(modelData.value)
@@ -468,7 +458,6 @@ PluginComponent {
                 Row {
                     width: parent.width
                     spacing: Theme.spacingS
-                    topPadding: Theme.spacingXS
 
                     DankTextField {
                         id: customTimeInput

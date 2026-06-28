@@ -40,7 +40,7 @@ Item {
         visible: active && angle > 0
         ShapePath {
             strokeColor: color
-            strokeWidth: strokeWidth + 0.5
+            strokeWidth: radialRingRoot.strokeWidth + 0.5
             fillColor: "transparent"
             capStyle: ShapePath.RoundCap
             PathAngleArc {
