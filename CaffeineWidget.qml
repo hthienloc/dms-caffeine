@@ -223,7 +223,7 @@ PluginComponent {
 
     horizontalBarPill: Component {
         Item {
-            implicitWidth: caffeineActive ? contentRow.implicitWidth : Theme.iconSizeSmall
+            implicitWidth: caffeineActive ? contentRow.implicitWidth : Theme.iconSize
             implicitHeight: Theme.iconSize
 
             Row {
@@ -270,7 +270,7 @@ PluginComponent {
     verticalBarPill: Component {
         Item {
             implicitWidth: Theme.iconSize
-            implicitHeight: caffeineActive ? vColumn.implicitHeight : Theme.iconSizeSmall
+            implicitHeight: caffeineActive ? vColumn.implicitHeight : Theme.iconSize
 
             Column {
                 id: vColumn
