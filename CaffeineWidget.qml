@@ -222,81 +222,93 @@ PluginComponent {
     readonly property color pillColor: caffeineActive ? Theme.primary : Theme.surfaceText
 
     horizontalBarPill: Component {
-        Row {
-            spacing: caffeineActive ? Theme.spacingS : 0
-            
-            // Icon wrapped in small radial progress ring
-            RadialProgressRing {
-                width: 24
-                height: 24
-                anchors.verticalCenter: parent.verticalCenter
-                radius: 10
-                strokeWidth: 1.5
-                color: root.pillColor
-                active: root.caffeineActive
-                backgroundOpacityActive: 0.2
-                backgroundOpacityInactive: 0.05
-                angle: {
-                    if (root.selectedDuration === "infinity") return 360;
-                    const total = parseInt(root.selectedDuration);
-                    if (isNaN(total) || total <= 0) return 360;
-                    return 360 * (root.timeLeft / total);
-                }
+        Item {
+            implicitWidth: caffeineActive ? contentRow.implicitWidth : Theme.iconSizeSmall
+            implicitHeight: Theme.iconSize
 
-                DankIcon {
-                    name: "local_cafe"
-                    size: Theme.iconSizeSmall
+            Row {
+                id: contentRow
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: caffeineActive ? Theme.spacingS : 0
+
+                RadialProgressRing {
+                    width: Theme.iconSize
+                    height: Theme.iconSize
+                    anchors.verticalCenter: parent.verticalCenter
+                    radius: Theme.iconSize / 2 - strokeWidth - 1
+                    strokeWidth: 1.5
                     color: root.pillColor
-                    anchors.centerIn: parent
-                }
-            }
+                    active: root.caffeineActive
+                    backgroundOpacityActive: 0.2
+                    backgroundOpacityInactive: 0.05
+                    angle: {
+                        if (root.selectedDuration === "infinity") return 360;
+                        const total = parseInt(root.selectedDuration);
+                        if (isNaN(total) || total <= 0) return 360;
+                        return 360 * (root.timeLeft / total);
+                    }
 
-            StyledText {
-                text: root.ccWidgetSecondaryText
-                color: root.pillColor
-                font.pixelSize: Theme.fontSizeMedium
-                anchors.verticalCenter: parent.verticalCenter
-                visible: caffeineActive
+                    DankIcon {
+                        name: "local_cafe"
+                        size: Theme.iconSizeSmall
+                        color: root.pillColor
+                        anchors.centerIn: parent
+                    }
+                }
+
+                StyledText {
+                    text: root.ccWidgetSecondaryText
+                    color: root.pillColor
+                    font.pixelSize: Theme.fontSizeMedium
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: caffeineActive
+                }
             }
         }
     }
 
     verticalBarPill: Component {
-        Column {
-            spacing: caffeineActive ? Theme.spacingXS : 0
-            
-            // Icon wrapped in small radial progress ring
-            RadialProgressRing {
-                width: 24
-                height: 24
-                anchors.horizontalCenter: parent.horizontalCenter
-                radius: 10
-                strokeWidth: 1.5
-                color: root.pillColor
-                active: root.caffeineActive
-                backgroundOpacityActive: 0.2
-                backgroundOpacityInactive: 0.05
-                angle: {
-                    if (root.selectedDuration === "infinity") return 360;
-                    const total = parseInt(root.selectedDuration);
-                    if (isNaN(total) || total <= 0) return 360;
-                    return 360 * (root.timeLeft / total);
-                }
+        Item {
+            implicitWidth: Theme.iconSize
+            implicitHeight: caffeineActive ? vColumn.implicitHeight : Theme.iconSizeSmall
 
-                DankIcon {
-                    name: "local_cafe"
-                    size: Theme.iconSizeSmall
+            Column {
+                id: vColumn
+                anchors.centerIn: parent
+                spacing: caffeineActive ? Theme.spacingXS : 0
+
+                RadialProgressRing {
+                    width: Theme.iconSize
+                    height: Theme.iconSize
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    radius: Theme.iconSize / 2 - strokeWidth - 1
+                    strokeWidth: 1.5
                     color: root.pillColor
-                    anchors.centerIn: parent
-                }
-            }
+                    active: root.caffeineActive
+                    backgroundOpacityActive: 0.2
+                    backgroundOpacityInactive: 0.05
+                    angle: {
+                        if (root.selectedDuration === "infinity") return 360;
+                        const total = parseInt(root.selectedDuration);
+                        if (isNaN(total) || total <= 0) return 360;
+                        return 360 * (root.timeLeft / total);
+                    }
 
-            StyledText {
-                text: root.ccWidgetSecondaryText
-                color: root.pillColor
-                font.pixelSize: Theme.fontSizeSmall
-                anchors.horizontalCenter: parent.horizontalCenter
-                visible: caffeineActive
+                    DankIcon {
+                        name: "local_cafe"
+                        size: Theme.iconSizeSmall
+                        color: root.pillColor
+                        anchors.centerIn: parent
+                    }
+                }
+
+                StyledText {
+                    text: root.ccWidgetSecondaryText
+                    color: root.pillColor
+                    font.pixelSize: Theme.fontSizeSmall
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: caffeineActive
+                }
             }
         }
     }
@@ -310,7 +322,7 @@ PluginComponent {
     }
 
     // Popout dimensions
-    popoutWidth: 320
+    popoutWidth: 360
     popoutHeight: 0 // auto from content
 
     // Popout content: duration selector grid
@@ -359,7 +371,7 @@ PluginComponent {
                 rightPadding: Theme.spacingM
 
                 Row {
-                    width: parent.width
+                    width: parent.width - parent.leftPadding - parent.rightPadding
                     spacing: Theme.spacingM
 
                     Loader {
@@ -394,7 +406,7 @@ PluginComponent {
 
                 Grid {
                     id: durationGrid
-                    width: parent.width
+                    width: parent.width - parent.leftPadding - parent.rightPadding
                     columns: 3
                     spacing: Theme.spacingS
 
@@ -456,7 +468,7 @@ PluginComponent {
                 }
 
                 Row {
-                    width: parent.width
+                    width: parent.width - parent.leftPadding - parent.rightPadding
                     spacing: Theme.spacingS
 
                     DankTextField {
