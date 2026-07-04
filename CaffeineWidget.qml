@@ -228,7 +228,7 @@ PluginComponent {
 
             Row {
                 id: contentRow
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.centerIn: parent
                 spacing: caffeineActive ? Theme.spacingS : 0
 
                 RadialProgressRing {
