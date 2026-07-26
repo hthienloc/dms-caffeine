@@ -229,7 +229,7 @@ PluginComponent {
             Row {
                 id: contentRow
                 anchors.centerIn: parent
-                spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingS : 0
+                spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingXS : 0
 
                 DankIcon {
                     name: "local_cafe"
@@ -257,7 +257,7 @@ PluginComponent {
             Column {
                 id: vColumn
                 anchors.centerIn: parent
-                spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingXS : 0
+                spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingXXS : 0
 
                 DankIcon {
                     name: "local_cafe"
