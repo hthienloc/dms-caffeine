@@ -223,37 +223,19 @@ PluginComponent {
 
     horizontalBarPill: Component {
         Item {
-            implicitWidth: caffeineActive ? contentRow.implicitWidth : Theme.iconSize
-            implicitHeight: Theme.iconSize
+            implicitWidth: contentRow.implicitWidth
+            implicitHeight: contentRow.implicitHeight
 
             Row {
                 id: contentRow
                 anchors.centerIn: parent
-                spacing: caffeineActive ? Theme.spacingS : 0
+                spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingS : 0
 
-                RadialProgressRing {
-                    width: Theme.iconSize
-                    height: Theme.iconSize
-                    anchors.verticalCenter: parent.verticalCenter
-                    radius: Theme.iconSize / 2 - strokeWidth - 1
-                    strokeWidth: 1.5
+                DankIcon {
+                    name: "local_cafe"
+                    size: Theme.iconSizeSmall
                     color: root.pillColor
-                    active: root.caffeineActive
-                    backgroundOpacityActive: 0.2
-                    backgroundOpacityInactive: 0.05
-                    angle: {
-                        if (root.selectedDuration === "infinity") return 360;
-                        const total = parseInt(root.selectedDuration);
-                        if (isNaN(total) || total <= 0) return 360;
-                        return 360 * (root.timeLeft / total);
-                    }
-
-                    DankIcon {
-                        name: "local_cafe"
-                        size: Theme.iconSizeSmall
-                        color: root.pillColor
-                        anchors.centerIn: parent
-                    }
+                    anchors.verticalCenter: parent.verticalCenter
                 }
 
                 StyledText {
@@ -261,7 +243,7 @@ PluginComponent {
                     color: root.pillColor
                     font.pixelSize: Theme.fontSizeMedium
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: caffeineActive
+                    visible: root.caffeineActive && root.selectedDuration !== "infinity"
                 }
             }
         }
@@ -269,37 +251,19 @@ PluginComponent {
 
     verticalBarPill: Component {
         Item {
-            implicitWidth: Theme.iconSize
-            implicitHeight: caffeineActive ? vColumn.implicitHeight : Theme.iconSize
+            implicitWidth: vColumn.implicitWidth
+            implicitHeight: vColumn.implicitHeight
 
             Column {
                 id: vColumn
                 anchors.centerIn: parent
-                spacing: caffeineActive ? Theme.spacingXS : 0
+                spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingXS : 0
 
-                RadialProgressRing {
-                    width: Theme.iconSize
-                    height: Theme.iconSize
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    radius: Theme.iconSize / 2 - strokeWidth - 1
-                    strokeWidth: 1.5
+                DankIcon {
+                    name: "local_cafe"
+                    size: Theme.iconSizeSmall
                     color: root.pillColor
-                    active: root.caffeineActive
-                    backgroundOpacityActive: 0.2
-                    backgroundOpacityInactive: 0.05
-                    angle: {
-                        if (root.selectedDuration === "infinity") return 360;
-                        const total = parseInt(root.selectedDuration);
-                        if (isNaN(total) || total <= 0) return 360;
-                        return 360 * (root.timeLeft / total);
-                    }
-
-                    DankIcon {
-                        name: "local_cafe"
-                        size: Theme.iconSizeSmall
-                        color: root.pillColor
-                        anchors.centerIn: parent
-                    }
+                    anchors.horizontalCenter: parent.horizontalCenter
                 }
 
                 StyledText {
@@ -307,7 +271,7 @@ PluginComponent {
                     color: root.pillColor
                     font.pixelSize: Theme.fontSizeSmall
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: caffeineActive
+                    visible: root.caffeineActive && root.selectedDuration !== "infinity"
                 }
             }
         }
