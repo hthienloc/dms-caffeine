@@ -221,21 +221,47 @@ PluginComponent {
 
     readonly property color pillColor: caffeineActive ? Theme.primary : Theme.surfaceText
 
+    // Size the pill from barIconSize (offset 0) instead of a fixed Theme.iconSize,
+    // so it tracks the bar's thickness, iconScale, and maximizeWidgetIcons the way
+    // native widgets do. Offset 0 keeps a default bar at Theme.iconSize — the size
+    // #7 established — and the glyph derives from the pill so the ring-to-glyph
+    // ratio holds.
+    readonly property real barPillIconSize: Theme.barIconSize(barThickness, 0, barConfig?.maximizeWidgetIcons, barConfig?.iconScale)
+    readonly property real barGlyphIconSize: Math.round(barPillIconSize * Theme.iconSizeSmall / Theme.iconSize)
+
     horizontalBarPill: Component {
         Item {
-            implicitWidth: contentRow.implicitWidth
-            implicitHeight: contentRow.implicitHeight
+            implicitWidth: caffeineActive ? contentRow.implicitWidth : root.barPillIconSize
+            implicitHeight: root.barPillIconSize
 
             Row {
                 id: contentRow
                 anchors.centerIn: parent
-                spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingXS : 0
+                spacing: caffeineActive ? Theme.spacingS : 0
 
-                DankIcon {
-                    name: "local_cafe"
-                    size: Theme.iconSizeSmall
-                    color: root.pillColor
+                RadialProgressRing {
+                    width: root.barPillIconSize
+                    height: root.barPillIconSize
                     anchors.verticalCenter: parent.verticalCenter
+                    radius: root.barPillIconSize / 2 - strokeWidth - 1
+                    strokeWidth: 1.5
+                    color: root.pillColor
+                    active: root.caffeineActive
+                    backgroundOpacityActive: 0.2
+                    backgroundOpacityInactive: 0.05
+                    angle: {
+                        if (root.selectedDuration === "infinity") return 360;
+                        const total = parseInt(root.selectedDuration);
+                        if (isNaN(total) || total <= 0) return 360;
+                        return 360 * (root.timeLeft / total);
+                    }
+
+                    DankIcon {
+                        name: "local_cafe"
+                        size: root.barGlyphIconSize
+                        color: root.pillColor
+                        anchors.centerIn: parent
+                    }
                 }
 
                 StyledText {
@@ -243,7 +269,7 @@ PluginComponent {
                     color: root.pillColor
                     font.pixelSize: Theme.fontSizeMedium
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: root.caffeineActive && root.selectedDuration !== "infinity"
+                    visible: caffeineActive
                 }
             }
         }
@@ -251,19 +277,37 @@ PluginComponent {
 
     verticalBarPill: Component {
         Item {
-            implicitWidth: vColumn.implicitWidth
-            implicitHeight: vColumn.implicitHeight
+            implicitWidth: root.barPillIconSize
+            implicitHeight: caffeineActive ? vColumn.implicitHeight : root.barPillIconSize
 
             Column {
                 id: vColumn
                 anchors.centerIn: parent
-                spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingXXS : 0
+                spacing: caffeineActive ? Theme.spacingXS : 0
 
-                DankIcon {
-                    name: "local_cafe"
-                    size: Theme.iconSizeSmall
-                    color: root.pillColor
+                RadialProgressRing {
+                    width: root.barPillIconSize
+                    height: root.barPillIconSize
                     anchors.horizontalCenter: parent.horizontalCenter
+                    radius: root.barPillIconSize / 2 - strokeWidth - 1
+                    strokeWidth: 1.5
+                    color: root.pillColor
+                    active: root.caffeineActive
+                    backgroundOpacityActive: 0.2
+                    backgroundOpacityInactive: 0.05
+                    angle: {
+                        if (root.selectedDuration === "infinity") return 360;
+                        const total = parseInt(root.selectedDuration);
+                        if (isNaN(total) || total <= 0) return 360;
+                        return 360 * (root.timeLeft / total);
+                    }
+
+                    DankIcon {
+                        name: "local_cafe"
+                        size: root.barGlyphIconSize
+                        color: root.pillColor
+                        anchors.centerIn: parent
+                    }
                 }
 
                 StyledText {
@@ -271,7 +315,7 @@ PluginComponent {
                     color: root.pillColor
                     font.pixelSize: Theme.fontSizeSmall
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root.caffeineActive && root.selectedDuration !== "infinity"
+                    visible: caffeineActive
                 }
             }
         }
