@@ -237,13 +237,13 @@ PluginComponent {
                 spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingXS : 0
 
                 Item {
-                    width: root.barGlyphIconSize + 6
-                    height: root.barGlyphIconSize + 6
+                    width: root.barGlyphIconSize + 8
+                    height: root.barGlyphIconSize + 8
                     anchors.verticalCenter: parent.verticalCenter
 
                     RadialProgressRing {
                         anchors.fill: parent
-                        radius: (root.barGlyphIconSize + 6) / 2 - strokeWidth
+                        radius: (root.barGlyphIconSize + 8) / 2 - strokeWidth
                         strokeWidth: 1.5
                         color: root.pillColor
                         active: root.caffeineActive
@@ -288,13 +288,13 @@ PluginComponent {
                 spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingXXS : 0
 
                 Item {
-                    width: root.barGlyphIconSize + 6
-                    height: root.barGlyphIconSize + 6
+                    width: root.barGlyphIconSize + 8
+                    height: root.barGlyphIconSize + 8
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     RadialProgressRing {
                         anchors.fill: parent
-                        radius: (root.barGlyphIconSize + 6) / 2 - strokeWidth
+                        radius: (root.barGlyphIconSize + 8) / 2 - strokeWidth
                         strokeWidth: 1.5
                         color: root.pillColor
                         active: root.caffeineActive
