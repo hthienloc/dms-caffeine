@@ -60,6 +60,7 @@ PluginComponent {
 
     // Sync settings
     property bool showToasts: (pluginData?.showToasts ?? true)
+    property bool showProgressRing: (pluginData?.showProgressRing ?? true)
     property bool appAutomationEnabled: (pluginData?.appAutomationEnabled ?? false)
     property string autoAppsList: (pluginData?.autoAppsList ?? "mpv, vlc, zoom, Teams, discord, webcord, slack, spotify, obs")
     readonly property var parsedAutoApps: autoAppsList.split(",").map(a => a.trim().toLowerCase()).filter(Boolean)
@@ -87,6 +88,7 @@ PluginComponent {
                 strokeWidth: 3
                 color: Theme.primary
                 active: root.caffeineActive
+                ringVisible: root.showProgressRing
                 backgroundOpacityActive: 0.25
                 backgroundOpacityInactive: 0.08
                 angle: {
@@ -239,6 +241,7 @@ PluginComponent {
                     strokeWidth: 1.5
                     color: root.pillColor
                     active: root.caffeineActive
+                    ringVisible: root.showProgressRing
                     backgroundOpacityActive: 0.2
                     backgroundOpacityInactive: 0.05
                     angle: {
@@ -285,6 +288,7 @@ PluginComponent {
                     strokeWidth: 1.5
                     color: root.pillColor
                     active: root.caffeineActive
+                    ringVisible: root.showProgressRing
                     backgroundOpacityActive: 0.2
                     backgroundOpacityInactive: 0.05
                     angle: {
