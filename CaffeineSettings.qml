@@ -62,6 +62,26 @@ PluginSettings {
     }
 
     SettingsCard {
+        id: appearanceSection
+        SectionTitle { 
+            text: I18n.tr("Appearance")
+            icon: "palette" 
+            showReset: showProgressRing.isDirty
+            onResetClicked: {
+                showProgressRing.resetToDefault();
+            }
+        }
+
+        ToggleSettingPlus {
+            id: showProgressRing
+            settingKey: "showProgressRing"
+            label: I18n.tr("Show Progress Ring")
+            description: I18n.tr("Show a visual radial countdown progress ring around the caffeine icon.")
+            defaultValue: true
+        }
+    }
+
+    SettingsCard {
         id: automationSection
         SectionTitle { 
             text: I18n.tr("Automation")

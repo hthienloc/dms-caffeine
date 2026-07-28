@@ -14,11 +14,13 @@ Item {
     property real centerY: height / 2
     property real backgroundOpacityActive: 0.2
     property real backgroundOpacityInactive: 0.05
+    property bool ringVisible: true
 
     Shape {
         anchors.fill: parent
         antialiasing: true
         preferredRendererType: Shape.CurveRenderer
+        visible: radialRingRoot.ringVisible
         opacity: active ? backgroundOpacityActive : backgroundOpacityInactive
         ShapePath {
             strokeColor: color
@@ -39,7 +41,7 @@ Item {
         anchors.fill: parent
         antialiasing: true
         preferredRendererType: Shape.CurveRenderer
-        visible: active && angle > 0
+        visible: radialRingRoot.ringVisible && active && angle > 0
         ShapePath {
             strokeColor: color
             strokeWidth: radialRingRoot.strokeWidth + 0.5

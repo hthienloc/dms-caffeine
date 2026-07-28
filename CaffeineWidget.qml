@@ -60,6 +60,7 @@ PluginComponent {
 
     // Sync settings
     property bool showToasts: (pluginData?.showToasts ?? true)
+    property bool showProgressRing: (pluginData?.showProgressRing ?? true)
     property bool appAutomationEnabled: (pluginData?.appAutomationEnabled ?? false)
     property string autoAppsList: (pluginData?.autoAppsList ?? "mpv, vlc, zoom, Teams, discord, webcord, slack, spotify, obs")
     readonly property var parsedAutoApps: autoAppsList.split(",").map(a => a.trim().toLowerCase()).filter(Boolean)
@@ -87,6 +88,7 @@ PluginComponent {
                 strokeWidth: 3
                 color: Theme.primary
                 active: root.caffeineActive
+                ringVisible: root.showProgressRing
                 backgroundOpacityActive: 0.25
                 backgroundOpacityInactive: 0.08
                 angle: {
@@ -231,11 +233,34 @@ PluginComponent {
                 anchors.centerIn: parent
                 spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingXS : 0
 
-                DankIcon {
-                    name: "local_cafe"
-                    size: Theme.iconSizeSmall
-                    color: root.pillColor
+                Item {
+                    width: Theme.iconSizeSmall + 8
+                    height: Theme.iconSizeSmall + 8
                     anchors.verticalCenter: parent.verticalCenter
+
+                    RadialProgressRing {
+                        anchors.fill: parent
+                        radius: (Theme.iconSizeSmall + 8) / 2 - strokeWidth
+                        strokeWidth: 1.5
+                        color: root.pillColor
+                        active: root.caffeineActive
+                        ringVisible: root.showProgressRing
+                        backgroundOpacityActive: 0.2
+                        backgroundOpacityInactive: 0.05
+                        angle: {
+                            if (root.selectedDuration === "infinity") return 360;
+                            const total = parseInt(root.selectedDuration);
+                            if (isNaN(total) || total <= 0) return 360;
+                            return 360 * (root.timeLeft / total);
+                        }
+                    }
+
+                    DankIcon {
+                        name: "local_cafe"
+                        size: Theme.iconSizeSmall
+                        color: root.pillColor
+                        anchors.centerIn: parent
+                    }
                 }
 
                 StyledText {
@@ -259,11 +284,34 @@ PluginComponent {
                 anchors.centerIn: parent
                 spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingXXS : 0
 
-                DankIcon {
-                    name: "local_cafe"
-                    size: Theme.iconSizeSmall
-                    color: root.pillColor
+                Item {
+                    width: Theme.iconSizeSmall + 8
+                    height: Theme.iconSizeSmall + 8
                     anchors.horizontalCenter: parent.horizontalCenter
+
+                    RadialProgressRing {
+                        anchors.fill: parent
+                        radius: (Theme.iconSizeSmall + 8) / 2 - strokeWidth
+                        strokeWidth: 1.5
+                        color: root.pillColor
+                        active: root.caffeineActive
+                        ringVisible: root.showProgressRing
+                        backgroundOpacityActive: 0.2
+                        backgroundOpacityInactive: 0.05
+                        angle: {
+                            if (root.selectedDuration === "infinity") return 360;
+                            const total = parseInt(root.selectedDuration);
+                            if (isNaN(total) || total <= 0) return 360;
+                            return 360 * (root.timeLeft / total);
+                        }
+                    }
+
+                    DankIcon {
+                        name: "local_cafe"
+                        size: Theme.iconSizeSmall
+                        color: root.pillColor
+                        anchors.centerIn: parent
+                    }
                 }
 
                 StyledText {
