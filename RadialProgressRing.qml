@@ -18,6 +18,7 @@ Item {
     Shape {
         anchors.fill: parent
         antialiasing: true
+        preferredRendererType: Shape.CurveRenderer
         opacity: active ? backgroundOpacityActive : backgroundOpacityInactive
         ShapePath {
             strokeColor: color
@@ -37,6 +38,7 @@ Item {
     Shape {
         anchors.fill: parent
         antialiasing: true
+        preferredRendererType: Shape.CurveRenderer
         visible: active && angle > 0
         ShapePath {
             strokeColor: color
