@@ -223,6 +223,9 @@ PluginComponent {
 
     readonly property color pillColor: caffeineActive ? Theme.primary : Theme.surfaceText
 
+    readonly property real barPillIconSize: Theme.barIconSize(barThickness, 0, barConfig?.maximizeWidgetIcons, barConfig?.iconScale)
+    readonly property real barGlyphIconSize: Math.round(barPillIconSize * Theme.iconSizeSmall / Theme.iconSize)
+
     horizontalBarPill: Component {
         Item {
             implicitWidth: contentRow.implicitWidth
@@ -234,13 +237,13 @@ PluginComponent {
                 spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingXS : 0
 
                 Item {
-                    width: Theme.iconSizeSmall + 8
-                    height: Theme.iconSizeSmall + 8
+                    width: root.barGlyphIconSize + 8
+                    height: root.barGlyphIconSize + 8
                     anchors.verticalCenter: parent.verticalCenter
 
                     RadialProgressRing {
                         anchors.fill: parent
-                        radius: (Theme.iconSizeSmall + 8) / 2 - strokeWidth
+                        radius: (root.barGlyphIconSize + 8) / 2 - strokeWidth
                         strokeWidth: 1.5
                         color: root.pillColor
                         active: root.caffeineActive
@@ -257,7 +260,7 @@ PluginComponent {
 
                     DankIcon {
                         name: "local_cafe"
-                        size: Theme.iconSizeSmall
+                        size: root.barGlyphIconSize
                         color: root.pillColor
                         anchors.centerIn: parent
                     }
@@ -285,13 +288,13 @@ PluginComponent {
                 spacing: (root.caffeineActive && root.selectedDuration !== "infinity") ? Theme.spacingXXS : 0
 
                 Item {
-                    width: Theme.iconSizeSmall + 8
-                    height: Theme.iconSizeSmall + 8
+                    width: root.barGlyphIconSize + 8
+                    height: root.barGlyphIconSize + 8
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     RadialProgressRing {
                         anchors.fill: parent
-                        radius: (Theme.iconSizeSmall + 8) / 2 - strokeWidth
+                        radius: (root.barGlyphIconSize + 8) / 2 - strokeWidth
                         strokeWidth: 1.5
                         color: root.pillColor
                         active: root.caffeineActive
@@ -308,7 +311,7 @@ PluginComponent {
 
                     DankIcon {
                         name: "local_cafe"
-                        size: Theme.iconSizeSmall
+                        size: root.barGlyphIconSize
                         color: root.pillColor
                         anchors.centerIn: parent
                     }
